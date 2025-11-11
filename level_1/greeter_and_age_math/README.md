@@ -21,7 +21,10 @@ A simple Python program that greets the user and performs basic age-related calc
 
 ## Output Example
 ```output
-Hello, Alice! You are 30 years old.
-In 5 years, you will be 35 years old.
-You are approximately 360 months old.
+Enter your name: Alice
+Hello, Alice! Welcome!
+Enter your birth date (dd/mm/yyyy): 04/12/2000
+You are 24 years old.
+You are about 288 months old.
+You are about 9108 days old.
 ```

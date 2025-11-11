@@ -3,37 +3,66 @@ File: greeter_and_age_math.py
 Author: Phillip Bridgeman
 Date: November 11, 2025
 Description: A simple program that greets the user and performs age-related calculations.
-Version: 1.0.0
-Copyright: Copyright (c) 2025 Phillip Bridgeman
-License: MIT License
+Version: 1.1.0
+License: MIT
 '''
-import datetime
+from __future__ import annotations
+from datetime import date
 
-def greet_user(name):
+def greet_user(name: str) -> str:
     """Greets the user by name."""
+    name = name.strip() or "friend"
     return f"Hello, {name}! Welcome!"
 
-name = input("Enter your name: ")
-print(greet_user(name))
-birth_date = input("Enter your birth date (dd/mm/yyyy): ")
+def parse_birthdate_ddmmyyyy(text: str) -> date:
+    """Parse 'dd/mm/yyyy' into a date object. Raises ValueError on invalid input."""
+    parts = text.strip().split("/")
+    if len(parts) != 3:
+        raise ValueError("Please enter your birth date as dd/mm/yyyy.")
+    try:
+        day, month, year = (int(p) for p in parts)
+    except ValueError:
+        raise ValueError("Day, month, and year must be numbers (dd/mm/yyyy).")
+    bd = date(year, month, day)  # may raise ValueError (invalid calendar date)
+    if bd > date.today():
+        raise ValueError("Birth date cannot be in the future.")
+    return bd
 
-def calculate_age(birth_date):
-    """Calculates the user's age in years. Based on string input of birth date."""
-    day, month, year = map(int, birth_date.split("/"))
-    # Check for valid date
-    if not (1 <= day <= 31 and 1 <= month <= 12 and year > 0):
-        return "Invalid date format. Please use dd/mm/yyyy."
-    birth_date = datetime.date(year, month, day)
-    today = datetime.date.today()
-    age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
-    return age
+def compute_age_years(birth_date: date, today: date | None = None) -> int:
+    """Exact age in whole years as of 'today'."""
+    today = today or date.today()
+    years = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+    return years
 
-age = calculate_age(birth_date)
-print(f"You are {age} years old.")
+def approx_age_days(birth_date: date, today: date | None = None) -> int:
+    """Approximate days lived using a date delta (better than years*365)."""
+    today = today or date.today()
+    return (today - birth_date).days
 
-def age_in_days(age):
-    """Calculates the user's age in days."""
-    return age * 365
+def ask_for_birthdate() -> date:
+    while True:
+        raw = input("Enter your birth date (dd/mm/yyyy): ")
+        try:
+            return parse_birthdate_ddmmyyyy(raw)
+        except ValueError as e:
+            print(f"❌ {e}")
+            print("Please try again.\n")
 
-age_days = age_in_days(age)
-print(f"You are {age_days} days old.")
+def main() -> None:
+    name = input("Enter your name: ")
+    print(greet_user(name))
+    today = date.today()
+    bd = ask_for_birthdate()
+
+    years = compute_age_years(bd)
+    months = (today.year - bd.year) * 12 + (today.month - bd.month)
+    if today.day < bd.day:
+        months -= 1
+    days = approx_age_days(bd)
+
+    print(f"You are {years} years old.")
+    print(f"You are about {months} months old.")
+    print(f"You are about {days} days old.")
+
+if __name__ == "__main__":
+    main()
